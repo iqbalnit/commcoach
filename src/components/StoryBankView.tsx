@@ -2,7 +2,8 @@
 
 import { useState, useMemo } from "react";
 import { useProgress, type StoryData } from "@/lib/useProgress";
-import { BookMarked, Plus, Trash2, Edit3, ChevronDown, ChevronUp, Lightbulb, CheckCircle, AlertCircle, X } from "lucide-react";
+import { BookMarked, Plus, Trash2, Edit3, ChevronDown, ChevronUp, Lightbulb, CheckCircle, AlertCircle, X, Sparkles } from "lucide-react";
+import AIStoryGeneratorPanel from "@/components/AIStoryGeneratorPanel";
 import { useSession, signIn } from "next-auth/react";
 import type { CompanyKey, StoryCategory } from "@/lib/data";
 
@@ -447,7 +448,7 @@ function StoryForm({
 export default function StoryBankView() {
   const { data: session } = useSession();
   const { stories, loading, isAuthenticated, addStory, updateStory, deleteStory } = useProgress();
-  const [activeTab, setActiveTab] = useState<"stories" | "add" | "tips">("stories");
+  const [activeTab, setActiveTab] = useState<"stories" | "add" | "generate" | "tips">("stories");
   const [filterCategory, setFilterCategory] = useState<StoryCategory | "all">("all");
   const [editingStory, setEditingStory] = useState<StoryData | null>(null);
 
@@ -488,9 +489,10 @@ export default function StoryBankView() {
     );
   }
 
-  const tabs: { id: "stories" | "add" | "tips"; label: string }[] = [
+  const tabs: { id: "stories" | "add" | "generate" | "tips"; label: string; badge?: string }[] = [
     { id: "stories", label: `My Stories (${stories.length})` },
     { id: "add", label: editingStory ? "Edit Story" : "Add Story" },
+    { id: "generate", label: "AI Generate", badge: "AI" },
     { id: "tips", label: "Tips" },
   ];
 
@@ -517,9 +519,14 @@ export default function StoryBankView() {
             if (tab.id !== "add") setEditingStory(null);
             setActiveTab(tab.id);
           }}
-            className="px-4 py-2 text-sm font-medium transition-colors relative"
+            className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium transition-colors relative"
             style={{ color: activeTab === tab.id ? "#818cf8" : "#6b7fa3" }}>
             {tab.label}
+            {tab.badge && (
+              <span className="text-xs px-1.5 py-0.5 rounded-full" style={{ background: "rgba(99,102,241,0.2)", color: "#818cf8", fontSize: 9 }}>
+                {tab.badge}
+              </span>
+            )}
             {activeTab === tab.id && (
               <div className="absolute bottom-0 left-0 right-0 h-0.5 rounded-t-full" style={{ background: "#818cf8" }} />
             )}
@@ -589,6 +596,17 @@ export default function StoryBankView() {
           onSave={handleSave}
           onCancel={() => { setEditingStory(null); setActiveTab("stories"); }}
         />
+      )}
+
+      {/* AI Generate Tab */}
+      {activeTab === "generate" && (
+        <div>
+          <div className="flex items-center gap-2 mb-5">
+            <Sparkles size={14} style={{ color: "#818cf8" }} />
+            <h2 className="text-sm font-semibold text-white">AI Story Generator</h2>
+          </div>
+          <AIStoryGeneratorPanel />
+        </div>
       )}
 
       {/* Tips Tab */}

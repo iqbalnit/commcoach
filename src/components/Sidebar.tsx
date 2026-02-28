@@ -14,6 +14,8 @@ import {
   BookMarked,
   LogIn,
   LogOut,
+  MessageSquare,
+  Sparkles,
 } from "lucide-react";
 import { useSession, signIn, signOut } from "next-auth/react";
 
@@ -53,6 +55,8 @@ const execNavItems: { label: string; view: View; icon: React.ReactNode; badge?: 
   { label: "Learning Path", view: "learning-path", icon: <Map size={18} />, badge: "12w" },
   { label: "Interview Prep", view: "exec-interview", icon: <Building2 size={18} />, badge: "FAANG" },
   { label: "Story Bank", view: "story-bank", icon: <BookMarked size={18} /> },
+  { label: "Mock Interview", view: "mock-interview", icon: <MessageSquare size={18} />, badge: "AI" },
+  { label: "Storytelling", view: "storytelling", icon: <Sparkles size={18} />, badge: "New" },
 ];
 
 export default function Sidebar({ activeView, setActiveView }: SidebarProps) {

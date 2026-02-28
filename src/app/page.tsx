@@ -11,6 +11,8 @@ import ProgressView from "@/components/ProgressView";
 import LearningPathView from "@/components/LearningPathView";
 import ExecutiveInterviewView from "@/components/ExecutiveInterviewView";
 import StoryBankView from "@/components/StoryBankView";
+import StorytellingMasteryView from "@/components/StorytellingMasteryView";
+import MockInterviewView from "@/components/MockInterviewView";
 
 export type View =
   | "dashboard"
@@ -21,7 +23,9 @@ export type View =
   | "progress"
   | "learning-path"
   | "exec-interview"
-  | "story-bank";
+  | "story-bank"
+  | "storytelling"
+  | "mock-interview";
 
 export default function Home() {
   const [activeView, setActiveView] = useState<View>("dashboard");
@@ -29,7 +33,6 @@ export default function Home() {
 
   const handleSetActiveView = (view: View) => {
     setActiveView(view);
-    // Clear preselected scenario when navigating away from practice
     if (view !== "practice") setPreselectedScenarioId(null);
   };
 
@@ -60,6 +63,8 @@ export default function Home() {
           />
         )}
         {activeView === "story-bank" && <StoryBankView />}
+        {activeView === "storytelling" && <StorytellingMasteryView />}
+        {activeView === "mock-interview" && <MockInterviewView />}
       </main>
     </div>
   );

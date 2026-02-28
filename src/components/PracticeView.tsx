@@ -3,6 +3,8 @@
 import { useState, useEffect, useRef } from "react";
 import { scenarios, frameworks, type Scenario } from "@/lib/data";
 import { useProgress } from "@/lib/useProgress";
+import TranscriptsTab from "@/components/TranscriptsTab";
+import { useVoiceAnalysis } from "@/lib/useVoiceAnalysis";
 import {
   Mic,
   Clock,
@@ -17,6 +19,8 @@ import {
   Square,
   Star,
   Shield,
+  FileText,
+  Volume2,
 } from "lucide-react";
 
 const difficultyColors = {
@@ -152,16 +156,20 @@ function PracticeSession({
   scenario,
   onBack,
   onComplete,
+  isAuthenticated,
 }: {
   scenario: Scenario;
   onBack: () => void;
-  onComplete: (elapsedSeconds: number) => void;
+  onComplete: (elapsedSeconds: number, responseText: string) => void;
+  isAuthenticated: boolean;
 }) {
   const [phase, setPhase] = useState<"prep" | "delivering" | "review">("prep");
   const [elapsed, setElapsed] = useState(0);
   const [response, setResponse] = useState("");
+  const [inputMode, setInputMode] = useState<"type" | "voice">("type");
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const completedRef = useRef(false);
+  const voice = useVoiceAnalysis();
 
   const fw = frameworks.find((f) => f.id === scenario.framework);
 
@@ -181,18 +189,52 @@ function PracticeSession({
 
   const stopDelivery = () => {
     if (intervalRef.current) clearInterval(intervalRef.current);
+    let finalText = response;
+    let voiceMetrics: { wpm?: number } = {};
+    if (inputMode === "voice" && voice.isRecording) {
+      const metrics = voice.stopRecording();
+      finalText = metrics.finalTranscript || voice.finalTranscript;
+      voiceMetrics = { wpm: metrics.wpm };
+    }
     setPhase("review");
     if (!completedRef.current) {
       completedRef.current = true;
-      onComplete(elapsed);
+      onComplete(elapsed, finalText);
+      // Fire-and-forget transcript save
+      if (isAuthenticated) {
+        fetch("/api/transcripts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            scenarioId: scenario.id,
+            scenarioTitle: scenario.title,
+            responseText: finalText,
+            elapsedSeconds: elapsed,
+            ...voiceMetrics,
+          }),
+        }).catch(() => {/* silent fail */});
+      }
     }
+  };
+
+  const handleVoiceToggle = async (mode: "type" | "voice") => {
+    if (mode === "voice" && !voice.isRecording) {
+      await voice.startRecording();
+    } else if (mode === "type" && voice.isRecording) {
+      const metrics = voice.stopRecording();
+      setResponse(metrics.finalTranscript || voice.finalTranscript);
+    }
+    setInputMode(mode);
   };
 
   const reset = () => {
     if (intervalRef.current) clearInterval(intervalRef.current);
+    if (voice.isRecording) voice.stopRecording();
     setPhase("prep");
     setElapsed(0);
     setResponse("");
+    setInputMode("type");
+    voice.resetMetrics();
     completedRef.current = false;
   };
 
@@ -363,24 +405,90 @@ function PracticeSession({
               {scenario.prompt}
             </div>
 
-            <textarea
-              value={response}
-              onChange={(e) => setResponse(e.target.value)}
-              placeholder="Type your response here (or just practice aloud and jot notes)..."
-              className="w-full rounded-xl p-4 text-sm resize-none outline-none placeholder:opacity-40"
-              style={{ background: "#111827", border: "1px solid #1e2d4a", color: "#e8eaf0", minHeight: 150 }}
-              rows={6}
-            />
+            {/* Input mode toggle */}
+            {voice.isSupported && (
+              <div className="flex gap-2 mb-4">
+                {([["type", "Type Response"], ["voice", "Use Voice"]] as const).map(([id, label]) => (
+                  <button
+                    key={id}
+                    onClick={() => handleVoiceToggle(id)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
+                    style={{
+                      background: inputMode === id ? "rgba(99,102,241,0.2)" : "#111827",
+                      color: inputMode === id ? "#a5b4fc" : "#6b7fa3",
+                      border: inputMode === id ? "1px solid rgba(99,102,241,0.4)" : "1px solid #1e2d4a",
+                    }}
+                  >
+                    {id === "voice" ? <Volume2 size={11} /> : <FileText size={11} />}
+                    {label}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {inputMode === "voice" ? (
+              <div>
+                {voice.permissionDenied ? (
+                  <div className="rounded-xl p-4 text-xs" style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", color: "#f87171" }}>
+                    Microphone permission denied. Please allow microphone access in your browser settings and try again.
+                  </div>
+                ) : (
+                  <div>
+                    {/* Volume meter */}
+                    {voice.isRecording && (
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: "#1e2d4a" }}>
+                          <div
+                            className="h-full rounded-full transition-all duration-75"
+                            style={{ width: `${voice.volumeLevel * 100}%`, background: "linear-gradient(90deg, #34d399, #6366f1)" }}
+                          />
+                        </div>
+                        <div className="flex gap-3 text-xs" style={{ color: "#6b7fa3" }}>
+                          {voice.wpm > 0 && <span>{voice.wpm} WPM</span>}
+                          {voice.fillerWordsDetected.length > 0 && (
+                            <span style={{ color: "#f87171" }}>{voice.fillerWordsDetected.length} filler word{voice.fillerWordsDetected.length !== 1 ? "s" : ""}</span>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    <div
+                      className="w-full rounded-xl p-4 text-sm min-h-24 leading-relaxed"
+                      style={{ background: "#111827", border: "1px solid #1e2d4a", color: voice.liveTranscript ? "#e8eaf0" : "#4a5980" }}
+                    >
+                      {voice.liveTranscript || (voice.isRecording ? "Listening… speak your response" : "Press Start to begin voice recording")}
+                    </div>
+                    <p className="text-xs mt-1" style={{ color: "#4a5980" }}>
+                      {voice.isRecording ? "Recording in progress…" : "Voice mode — requires Chrome or Edge"}
+                    </p>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <textarea
+                value={response}
+                onChange={(e) => setResponse(e.target.value)}
+                placeholder="Type your response here (or just practice aloud and jot notes)..."
+                className="w-full rounded-xl p-4 text-sm resize-none outline-none placeholder:opacity-40"
+                style={{ background: "#111827", border: "1px solid #1e2d4a", color: "#e8eaf0", minHeight: 150 }}
+                rows={6}
+              />
+            )}
           </div>
 
           <button
             onClick={stopDelivery}
-            className="flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-semibold text-white transition-all hover:scale-105"
+            disabled={inputMode === "voice" && voice.liveTranscript.trim().split(/\s+/).filter(Boolean).length < 20 && voice.isRecording}
+            className="flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-semibold text-white transition-all hover:scale-105 disabled:opacity-50"
             style={{ background: "#374151", border: "1px solid #4b5563" }}
           >
             <Square size={14} />
             Finish & Get Feedback
           </button>
+          {inputMode === "voice" && voice.isRecording && (
+            <p className="text-xs mt-2" style={{ color: "#4a5980" }}>
+              Speak at least 20 words before finishing (current: {voice.liveTranscript.trim().split(/\s+/).filter(Boolean).length})
+            </p>
+          )}
         </div>
       )}
 
@@ -517,6 +625,7 @@ export default function PracticeView({ initialScenarioId, onScenarioConsumed }: 
   const [selected, setSelected] = useState<Scenario | null>(() =>
     initialScenarioId ? (scenarios.find((s) => s.id === initialScenarioId) ?? null) : null
   );
+  const [mainTab, setMainTab] = useState<"scenarios" | "transcripts">("scenarios");
   const [categoryFilter, setCategoryFilter] = useState<string>("All");
   const [typeFilter, setTypeFilter] = useState<"all" | "standard" | "executive">("all");
   const [difficultyFilter, setDifficultyFilter] = useState<string>("All");
@@ -532,7 +641,7 @@ export default function PracticeView({ initialScenarioId, onScenarioConsumed }: 
     }
   }, [initialScenarioId]);
 
-  const handleScenarioComplete = async (scenario: Scenario, elapsedSeconds: number) => {
+  const handleScenarioComplete = async (scenario: Scenario, elapsedSeconds: number, _responseText: string) => {
     const minutes = Math.ceil(elapsedSeconds / 60);
     await markScenarioCompleted(scenario.id, minutes);
     await markFrameworkViewed(scenario.framework);
@@ -554,31 +663,31 @@ export default function PracticeView({ initialScenarioId, onScenarioConsumed }: 
       <PracticeSession
         scenario={selected}
         onBack={() => setSelected(null)}
-        onComplete={(elapsed) => handleScenarioComplete(selected, elapsed)}
+        onComplete={(elapsed, responseText) => handleScenarioComplete(selected, elapsed, responseText)}
+        isAuthenticated={isAuthenticated}
       />
     );
   }
 
   return (
     <div className="p-8 max-w-5xl mx-auto">
-      <div className="mb-8">
+      <div className="mb-6">
         <div className="flex items-center gap-2 mb-2">
           <Mic size={14} style={{ color: "#818cf8" }} />
           <span className="text-xs font-medium uppercase tracking-widest" style={{ color: "#818cf8" }}>
-            Practice Scenarios
+            Practice
           </span>
         </div>
         <div className="flex items-start justify-between">
           <div>
             <h1 className="text-2xl font-bold text-white mb-2">
-              Real-World Communication Scenarios
+              Practice & Transcripts
             </h1>
             <p className="text-sm" style={{ color: "#6b7fa3" }}>
-              {scenarios.length} scenarios including {scenarios.filter((s) => s.isExecutive).length} executive FAANG interview questions.
-              {isAuthenticated ? "" : " Sign in to track your progress."}
+              {scenarios.length} scenarios — responses saved automatically when signed in.
             </p>
           </div>
-          {isAuthenticated && (
+          {isAuthenticated && mainTab === "scenarios" && (
             <div className="text-right">
               <p className="text-xl font-bold text-white">{progress?.scenariosCompleted.length ?? 0}<span className="text-sm font-normal" style={{ color: "#6b7fa3" }}>/{scenarios.length}</span></p>
               <p className="text-xs" style={{ color: "#6b7fa3" }}>completed</p>
@@ -587,6 +696,34 @@ export default function PracticeView({ initialScenarioId, onScenarioConsumed }: 
         </div>
       </div>
 
+      {/* Main tab bar */}
+      <div className="flex gap-2 mb-6">
+        {([
+          { id: "scenarios", label: "Scenarios", icon: <Mic size={13} /> },
+          { id: "transcripts", label: "My Transcripts", icon: <FileText size={13} /> },
+        ] as const).map(({ id, label, icon }) => (
+          <button
+            key={id}
+            onClick={() => setMainTab(id)}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all"
+            style={{
+              background: mainTab === id ? "rgba(99,102,241,0.2)" : "#0d1426",
+              color: mainTab === id ? "#a5b4fc" : "#6b7fa3",
+              border: mainTab === id ? "1px solid rgba(99,102,241,0.4)" : "1px solid #1e2d4a",
+            }}
+          >
+            {icon}
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {mainTab === "transcripts" && (
+        <TranscriptsTab isAuthenticated={isAuthenticated} />
+      )}
+
+      {mainTab === "scenarios" && (
+      <div>
       {/* Type Filter */}
       <div className="flex gap-2 mb-3">
         {([["all", "All Scenarios"], ["standard", "Standard (8)"], ["executive", "FAANG Executive (15)"]] as const).map(([id, label]) => (
@@ -649,6 +786,8 @@ export default function PracticeView({ initialScenarioId, onScenarioConsumed }: 
           />
         ))}
       </div>
+      </div>
+      )}
     </div>
   );
 }

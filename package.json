@@ -10,14 +10,17 @@
     "postinstall": "prisma generate"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.78.0",
     "@auth/prisma-adapter": "^2.11.1",
     "@libsql/client": "^0.17.0",
     "@prisma/adapter-libsql": "^7.4.2",
     "@prisma/client": "^7.4.2",
     "framer-motion": "^12.34.3",
     "lucide-react": "^0.575.0",
+    "mammoth": "^1.11.0",
     "next": "16.1.6",
     "next-auth": "^5.0.0-beta.30",
+    "pdf-parse": "^2.4.5",
     "prisma": "^7.4.2",
     "react": "19.2.3",
     "react-dom": "19.2.3"

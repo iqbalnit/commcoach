@@ -23,6 +23,7 @@ export async function GET() {
     scenariosCompleted: JSON.parse(progress.scenariosCompleted),
     frameworksViewed: JSON.parse(progress.frameworksViewed),
     principlesViewed: JSON.parse(progress.principlesViewed),
+    storytellingModulesViewed: JSON.parse(progress.storytellingModulesViewed),
   });
 }
 
@@ -41,7 +42,13 @@ export async function POST(req: Request) {
 
   const { action, payload } = body as { action: unknown; payload: unknown };
 
-  const validActions = ["completeScenario", "viewFramework", "viewPrinciple", "updateQuizScore"];
+  const validActions = [
+    "completeScenario",
+    "viewFramework",
+    "viewPrinciple",
+    "updateQuizScore",
+    "viewStorytellingModule",
+  ];
   if (typeof action !== "string" || !validActions.includes(action)) {
     return NextResponse.json({ error: "Invalid action" }, { status: 400 });
   }
@@ -62,6 +69,7 @@ export async function POST(req: Request) {
   const scenariosCompleted: string[] = JSON.parse(progress.scenariosCompleted);
   const frameworksViewed: string[] = JSON.parse(progress.frameworksViewed);
   const principlesViewed: string[] = JSON.parse(progress.principlesViewed);
+  const storytellingModulesViewed: string[] = JSON.parse(progress.storytellingModulesViewed);
 
   const today = new Date().toDateString();
   const lastDate = progress.lastPracticeDate
@@ -124,6 +132,15 @@ export async function POST(req: Request) {
     if (score > progress.quizHighScore) {
       updates = { quizHighScore: score };
     }
+  } else if (action === "viewStorytellingModule") {
+    const moduleId = payloadObj.moduleId;
+    if (typeof moduleId !== "string" || moduleId.length === 0 || moduleId.length > 100) {
+      return NextResponse.json({ error: "Invalid moduleId" }, { status: 400 });
+    }
+    if (!storytellingModulesViewed.includes(moduleId)) {
+      storytellingModulesViewed.push(moduleId);
+    }
+    updates = { storytellingModulesViewed: JSON.stringify(storytellingModulesViewed) };
   }
 
   const updated = await prisma.progress.update({
@@ -136,5 +153,6 @@ export async function POST(req: Request) {
     scenariosCompleted: JSON.parse(updated.scenariosCompleted),
     frameworksViewed: JSON.parse(updated.frameworksViewed),
     principlesViewed: JSON.parse(updated.principlesViewed),
+    storytellingModulesViewed: JSON.parse(updated.storytellingModulesViewed),
   });
 }

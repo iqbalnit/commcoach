@@ -35,7 +35,30 @@ export interface ProgressData {
   totalPracticeMinutes: number;
   streakDays: number;
   lastPracticeDate: string | null;
+  storytellingModulesViewed: string[];
   updatedAt: string;
+}
+
+export interface TranscriptData {
+  id: string;
+  userId: string;
+  scenarioId: string;
+  scenarioTitle: string;
+  responseText: string;
+  elapsedSeconds: number;
+  wordCount: number;
+  fillerCount: number;
+  hasNumbers: boolean;
+  wpm: number | null;
+  pauseCount: number | null;
+  speechRatio: number | null;
+  aiAnalysis: {
+    strengths: string[];
+    improvements: string[];
+    frameworkAdherence: string;
+    score: number;
+  } | null;
+  createdAt: string;
 }
 
 export interface LearningPathData {
