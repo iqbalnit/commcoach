@@ -30,27 +30,27 @@ const featuredFrameworks = frameworks.slice(0, 3);
 
 const coachInsights = [
   {
-    coach: "Matt Abrahams",
-    role: "Stanford Prof · Think Fast, Talk Smart",
+    coach: "The Structured Thinker",
+    role: "Executive Communication Research",
     insight:
       "Most communication anxiety comes from focusing on yourself instead of your audience. Shift the focus and watch the anxiety dissolve.",
-    avatar: "MA",
+    avatar: "ST",
     color: "#6366f1",
   },
   {
-    coach: "Kim Scott",
-    role: "Author · Radical Candor",
+    coach: "The Candid Leader",
+    role: "Leadership & Feedback Research",
     insight:
       "Feedback is a gift. Withholding it to spare feelings is selfish. Care personally AND challenge directly.",
-    avatar: "KS",
+    avatar: "CL",
     color: "#10b981",
   },
   {
-    coach: "Michael Bungay Stanier",
-    role: "Coach · The Coaching Habit",
+    coach: "The Executive Coach",
+    role: "Coaching Psychology",
     insight:
       "The advice-giving impulse is the enemy of great coaching. Ask 'And what else?' before you offer any answer.",
-    avatar: "MB",
+    avatar: "EC",
     color: "#f59e0b",
   },
 ];
@@ -197,10 +197,10 @@ export default function Dashboard({ setActiveView }: DashboardProps) {
         </div>
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-white mb-2">Think Fast. Talk Smart.</h1>
+            <h1 className="text-3xl font-bold text-white mb-2">Sharpen Your Executive Voice.</h1>
             <p className="text-base" style={{ color: "#6b7fa3" }}>
-              Inspired by Matt Abrahams, McKinsey, and top executive coaches.
-              Build frameworks, practice scenarios, and develop real presence.
+              Frameworks, practice scenarios, and executive presence —
+              engineered for FAANG Director and VP interviews.
             </p>
           </div>
           {isAuthenticated && streakDays > 0 && (

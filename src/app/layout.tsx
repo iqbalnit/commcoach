@@ -3,7 +3,7 @@ import "./globals.css";
 import { SessionProvider } from "next-auth/react";
 
 export const metadata: Metadata = {
-  title: "CommCoach | Executive Communication Coach",
+  title: "SpeakSharp | Executive Communication Coach",
   description:
     "Prepare for Director and VP roles at Google, Amazon, Microsoft, Meta, and Apple. Master executive communication, FAANG interview prep, and leadership storytelling.",
 };

@@ -179,7 +179,7 @@ export default function FrameworksView() {
           Proven Structures for Every Situation
         </h1>
         <p className="text-sm" style={{ color: "#6b7fa3" }}>
-          Frameworks from Matt Abrahams, McKinsey, behavioral interview coaches, and executive leadership training. Click any framework to explore steps, examples, and when to use it.
+          Frameworks from McKinsey, behavioral interview research, and executive leadership training. Click any framework to explore steps, examples, and when to use it.
         </p>
       </div>
 

@@ -112,8 +112,8 @@ export const frameworks: Framework[] = [
     name: "PREP Framework",
     acronym: "PREP",
     description:
-      "A structured approach to answering questions concisely and persuasively. Popularized by Matt Abrahams for spontaneous speaking situations.",
-    source: "Matt Abrahams – Think Fast, Talk Smart",
+      "A structured approach to answering questions concisely and persuasively. Widely used in executive communication coaching for spontaneous speaking situations.",
+    source: "Executive Communication Coaching",
     steps: [
       {
         label: "Point",
@@ -242,7 +242,7 @@ export const frameworks: Framework[] = [
     acronym: "ABT",
     description:
       "A narrative rhythm framework from screenwriting used to create engaging, conflict-driven stories that hold attention.",
-    source: "Randy Olson / Matt Abrahams",
+    source: "Narrative Psychology / Screenwriting Research",
     steps: [
       {
         label: "And",
@@ -320,7 +320,7 @@ export const frameworks: Framework[] = [
     acronym: "WOOPS",
     description:
       "A recovery and improvisation framework to handle mistakes, interruptions, and unexpected moments with grace, inspired by improvisational theater principles.",
-    source: "Matt Abrahams – Improvisational Communication",
+    source: "Improvisational Theater & Communication Research",
     steps: [
       {
         label: "Welcome",
@@ -695,7 +695,7 @@ export const scenarios: Scenario[] = [
       "Forgetting to include a call to action",
     ],
     expertTip:
-      "Matt Abrahams: 'The best pitches make the listener the hero, not your product.'",
+      "Executive coaching insight: 'The best pitches make the listener the hero, not your product.'",
     timeLimit: 60,
   },
   {
@@ -791,7 +791,7 @@ export const scenarios: Scenario[] = [
       "Avoiding the real issue by softening too much",
     ],
     expertTip:
-      "\"The goal of feedback is a better future, not a processed past.\" — Executive Coach Kim Scott (Radical Candor)",
+      "\"The goal of feedback is a better future, not a processed past.\" — Executive Leadership Research",
     timeLimit: 180,
   },
   {
@@ -815,7 +815,7 @@ export const scenarios: Scenario[] = [
       "Letting it derail the rest of your talk",
     ],
     expertTip:
-      "Matt Abrahams: 'How you handle a mistake matters more than the mistake itself. It's a trust-building moment.'",
+      "Executive coaching insight: 'How you handle a mistake matters more than the mistake itself. It's a trust-building moment.'",
     timeLimit: 60,
   },
   {
@@ -1227,7 +1227,7 @@ export const scenarios: Scenario[] = [
       "Feedback focused on personality rather than observable behavior",
     ],
     expertTip:
-      "Kim Scott (Radical Candor): 'The kindest thing you can do for a peer executive is give them direct, specific feedback in private before the problem becomes a board-level issue.'",
+      "Executive coaching research: 'The kindest thing you can do for a peer executive is give them direct, specific feedback in private before the problem becomes a board-level issue.'",
     timeLimit: 180,
     isExecutive: true,
     companies: ["general", "google", "microsoft"],
@@ -1300,7 +1300,7 @@ export const principles: Principle[] = [
     title: "Manage Your Anxiety, Don't Eliminate It",
     description:
       "Nervousness is energy — the goal is to channel it, not suppress it. Reframing anxiety as excitement activates the same physiological state but with a positive mental orientation.",
-    coach: "Matt Abrahams",
+    coach: "Communication Science Research",
     category: "Mindset",
     actionItems: [
       "Before speaking, say 'I'm excited' instead of 'I'm nervous'",
@@ -1330,7 +1330,7 @@ export const principles: Principle[] = [
     title: "Silence Is a Tool, Not a Failure",
     description:
       "Pauses create emphasis, give audiences time to process, and signal confidence. Most speakers fear silence and fill it with filler words, which undermines their credibility.",
-    coach: "Matt Abrahams",
+    coach: "Executive Delivery Coaching",
     category: "Delivery",
     actionItems: [
       "Practice the 'dramatic pause' — pause for 2 seconds before key points",
@@ -1345,7 +1345,7 @@ export const principles: Principle[] = [
     title: "Structure Reduces Audience Cognitive Load",
     description:
       "People can't follow what they can't organize mentally. Signposting — flagging structure as you speak — dramatically increases comprehension and retention.",
-    coach: "Think Fast, Talk Smart",
+    coach: "Cognitive Load Research",
     category: "Structure",
     actionItems: [
       "Open with a roadmap: 'I'll cover three things: X, Y, and Z.'",
@@ -1375,7 +1375,7 @@ export const principles: Principle[] = [
     title: "Stories Are More Persuasive Than Data",
     description:
       "The brain is wired for narrative. Data tells, but stories sell. The most effective communicators pair data with a human story that makes the data meaningful.",
-    coach: "Matt Abrahams / Nancy Duarte",
+    coach: "Narrative Communication Research",
     category: "Storytelling",
     actionItems: [
       "For every data point, find the human story behind it",
@@ -1405,7 +1405,7 @@ export const principles: Principle[] = [
     title: "Ask, Don't Tell — The Coaching Approach",
     description:
       "The best communicators and leaders ask more than they tell. Questions unlock insight, build buy-in, and position you as a thoughtful partner rather than a know-it-all.",
-    coach: "Executive Coaching (Michael Bungay Stanier)",
+    coach: "Executive Coaching Research",
     category: "Influence",
     actionItems: [
       "Replace 'Here's what I think' with 'What do you think?'",
@@ -1413,7 +1413,7 @@ export const principles: Principle[] = [
       "Before giving advice, ask: 'What would be most helpful right now?'",
     ],
     quote:
-      "\"Stay curious a little longer. Rush to action a little more slowly.\" — Michael Bungay Stanier",
+      "\"Stay curious a little longer. Rush to action a little more slowly.\" — Executive Coaching Research",
   },
 ];
 
@@ -1431,7 +1431,7 @@ export const quizzes: Quiz[] = [
   {
     id: "q2",
     question:
-      "According to Matt Abrahams, what is the best way to handle communication anxiety?",
+      "According to communication science research, what is the most effective way to handle pre-presentation anxiety?",
     options: [
       "Eliminate it through meditation",
       "Ignore it and push through",
@@ -1440,7 +1440,7 @@ export const quizzes: Quiz[] = [
     ],
     correct: 2,
     explanation:
-      "Abrahams teaches that anxiety and excitement share the same physiological state. Saying 'I'm excited' instead of 'I'm nervous' reframes the energy positively without suppressing it.",
+      "Research in cognitive reappraisal shows that anxiety and excitement share the same physiological activation state. Saying 'I'm excited' instead of 'I'm nervous' reframes the energy positively and measurably improves performance under pressure.",
     category: "Mindset",
   },
   {
@@ -1464,7 +1464,7 @@ export const quizzes: Quiz[] = [
     ],
     correct: 1,
     explanation:
-      "The 'But' is the narrative engine. Without compelling conflict, the story lacks tension and the resolution feels unearned. Randy Olson developed ABT from screenwriting principles.",
+      "The 'But' is the narrative engine. Without compelling conflict, the story lacks tension and the resolution feels unearned. The ABT structure originates in screenwriting and narrative psychology principles.",
     category: "Frameworks",
   },
   {
@@ -1518,7 +1518,7 @@ export const quizzes: Quiz[] = [
     ],
     correct: 1,
     explanation:
-      "Michael Bungay Stanier popularized 'And What Else?' as a simple, powerful coaching question that draws out deeper thinking and signals genuine curiosity without requiring the coach to do all the work.",
+      "The AWE question — 'And What Else?' — is a foundational coaching technique that draws out deeper thinking and signals genuine curiosity without requiring the coach to do all the work.",
     category: "Coaching",
   },
 ];

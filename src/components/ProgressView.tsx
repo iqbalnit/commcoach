@@ -843,7 +843,7 @@ export default function ProgressView({ setActiveView }: ProgressViewProps) {
                       daily will outperform a two-hour session once a week. You&rsquo;re building
                       a communication habit — keep showing up.&rdquo;
                     </p>
-                    <p className="text-xs" style={{ color: "#4a5980" }}>— Matt Abrahams, Think Fast, Talk Smart</p>
+                    <p className="text-xs" style={{ color: "#4a5980" }}>— Executive Communication Research</p>
                   </div>
                 </div>
               </div>

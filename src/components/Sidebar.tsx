@@ -119,7 +119,7 @@ export default function Sidebar({ activeView, setActiveView }: SidebarProps) {
           </div>
           <div>
             <div className="text-sm font-bold text-white leading-tight">
-              CommCoach
+              SpeakSharp
             </div>
             <div className="text-xs" style={{ color: "#6b7fa3" }}>
               Executive Edition

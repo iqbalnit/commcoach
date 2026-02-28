@@ -231,7 +231,7 @@ export default function PrinciplesView() {
           The Principles Behind Great Communication
         </h1>
         <p className="text-sm" style={{ color: "#6b7fa3" }}>
-          Distilled from Matt Abrahams, executive coaching traditions, and
+          Distilled from executive coaching traditions, communication science, and
           behavioral research. These are the mental models and habits that
           separate good communicators from great ones.
         </p>
@@ -302,7 +302,7 @@ export default function PrinciplesView() {
               present, clear, and genuinely interested in the other person.&rdquo;
             </p>
             <p className="text-xs" style={{ color: "#4a5980" }}>
-              — Matt Abrahams, Think Fast, Talk Smart
+              — Executive Communication Research
             </p>
           </div>
         </div>
