@@ -64,7 +64,12 @@ function getSpeechRecognition(): (new () => SpeechRecognition) | null {
 }
 
 export function useVoiceAnalysis() {
-  const [isSupported] = useState(() => !!getSpeechRecognition());
+  // Evaluate after mount so SSR (window=undefined) doesn't lock this to false
+  const [isSupported, setIsSupported] = useState(false);
+
+  useEffect(() => {
+    setIsSupported(!!getSpeechRecognition());
+  }, []);
   const [isRecording, setIsRecording] = useState(false);
   const [liveTranscript, setLiveTranscript] = useState("");
   const [finalTranscript, setFinalTranscript] = useState("");
