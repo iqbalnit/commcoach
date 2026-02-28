@@ -60,11 +60,11 @@ export async function POST(req: Request) {
     validated = validateBody(rawBody, {
       title:     { type: "string", minLength: 1, maxLength: 200 },
       category:  { type: "string", minLength: 1, maxLength: 100 },
-      situation: { type: "string", minLength: 1, maxLength: 5000 },
-      task:      { type: "string", minLength: 1, maxLength: 5000 },
-      action:    { type: "string", minLength: 1, maxLength: 5000 },
-      result:    { type: "string", minLength: 1, maxLength: 5000 },
-      impact:    { type: "string", minLength: 1, maxLength: 2000 },
+      situation: { type: "string", maxLength: 5000, optional: true },
+      task:      { type: "string", maxLength: 5000, optional: true },
+      action:    { type: "string", maxLength: 5000, optional: true },
+      result:    { type: "string", maxLength: 5000, optional: true },
+      impact:    { type: "string", maxLength: 2000, optional: true },
       companiesRelevant: { type: "array", optional: true },
       questionTypes:     { type: "array", optional: true },
       tags:              { type: "array", optional: true },
@@ -80,11 +80,11 @@ export async function POST(req: Request) {
   const {
     title,
     category,
-    situation,
-    task,
-    action,
-    result,
-    impact,
+    situation = "",
+    task = "",
+    action = "",
+    result = "",
+    impact = "",
     companiesRelevant = [],
     questionTypes = [],
     tags = [],
@@ -92,11 +92,11 @@ export async function POST(req: Request) {
   } = validated as {
     title: string;
     category: string;
-    situation: string;
-    task: string;
-    action: string;
-    result: string;
-    impact: string;
+    situation?: string;
+    task?: string;
+    action?: string;
+    result?: string;
+    impact?: string;
     companiesRelevant?: unknown[];
     questionTypes?: unknown[];
     tags?: unknown[];

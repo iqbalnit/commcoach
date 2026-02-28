@@ -190,6 +190,24 @@ function StoryCard({
   );
 }
 
+type RequiredStarField = "title" | "situation" | "task" | "action" | "result" | "impact";
+const REQUIRED_FIELDS: RequiredStarField[] = ["title", "situation", "task", "action", "result", "impact"];
+
+function getFieldError(key: RequiredStarField, value: string): string | null {
+  if (!value.trim()) {
+    const labels: Record<RequiredStarField, string> = {
+      title: "Story Title",
+      situation: "Situation",
+      task: "Task",
+      action: "Action",
+      result: "Result",
+      impact: "Business Impact",
+    };
+    return `${labels[key]} is required`;
+  }
+  return null;
+}
+
 function StoryForm({
   initial,
   onSave,
@@ -217,21 +235,45 @@ function StoryForm({
       : emptyForm()
   );
 
+  // Track which fields the user has visited (to avoid showing errors before touching a field)
+  const [touched, setTouched] = useState<Partial<Record<RequiredStarField, boolean>>>({});
+  // When user clicks Save, mark all fields as touched to reveal all errors
+  const [submitAttempted, setSubmitAttempted] = useState(false);
+
   const score = useMemo(() => computeStrengthScore(form), [form]);
 
   const updateField = <K extends keyof FormState>(key: K, value: FormState[K]) =>
     setForm((prev) => ({ ...prev, [key]: value }));
 
+  const markTouched = (key: RequiredStarField) =>
+    setTouched((prev) => ({ ...prev, [key]: true }));
+
   const toggleArray = <T,>(arr: T[], item: T): T[] =>
     arr.includes(item) ? arr.filter((x) => x !== item) : [...arr, item];
 
+  // Compute all errors across required fields
+  const errors: Partial<Record<RequiredStarField, string>> = {};
+  for (const key of REQUIRED_FIELDS) {
+    const err = getFieldError(key, form[key] as string);
+    if (err) errors[key] = err;
+  }
+  const hasErrors = Object.keys(errors).length > 0;
+
   const handleSubmit = () => {
-    if (!form.title.trim()) return;
+    if (hasErrors) {
+      // Reveal all errors at once
+      setSubmitAttempted(true);
+      return;
+    }
     onSave(form);
   };
 
+  const showError = (key: RequiredStarField) =>
+    !!errors[key] && (touched[key] || submitAttempted);
+
   const textareaClass = "w-full rounded-xl p-3 text-sm resize-none outline-none transition-colors";
-  const textareaStyle = { background: "#111827", border: "1px solid #1e2d4a", color: "#e8eaf0" };
+  const inputBorder = (key: RequiredStarField) =>
+    showError(key) ? "1px solid #f87171" : "1px solid #1e2d4a";
 
   return (
     <div className="space-y-5">
@@ -247,11 +289,22 @@ function StoryForm({
           {/* Title + Category */}
           <div className="flex gap-3">
             <div className="flex-1">
-              <label className="block text-xs font-semibold mb-1" style={{ color: "#6b7fa3" }}>Story Title *</label>
-              <input value={form.title} onChange={(e) => updateField("title", e.target.value)}
+              <label className="block text-xs font-semibold mb-1" style={{ color: "#6b7fa3" }}>
+                Story Title <span style={{ color: "#f87171" }}>*</span>
+              </label>
+              <input
+                value={form.title}
+                onChange={(e) => updateField("title", e.target.value)}
+                onBlur={() => markTouched("title")}
                 placeholder="e.g. Led the Q3 platform migration"
-                className="w-full rounded-xl p-3 text-sm outline-none"
-                style={{ background: "#111827", border: "1px solid #1e2d4a", color: "#e8eaf0" }} />
+                className="w-full rounded-xl p-3 text-sm outline-none transition-colors"
+                style={{ background: "#111827", border: inputBorder("title"), color: "#e8eaf0" }}
+              />
+              {showError("title") && (
+                <p className="flex items-center gap-1 mt-1 text-xs" style={{ color: "#f87171" }}>
+                  <AlertCircle size={11} /> {errors.title}
+                </p>
+              )}
             </div>
             <div>
               <label className="block text-xs font-semibold mb-1" style={{ color: "#6b7fa3" }}>Category</label>
@@ -267,27 +320,38 @@ function StoryForm({
           </div>
 
           {/* STAR Sections */}
-          {[
+          {([
             { key: "situation" as const, label: "Situation", hint: "Set the scene — when, where, what was happening? (suggest 100+ chars)", rows: 3 },
             { key: "task" as const, label: "Task", hint: "What was your specific responsibility? (suggest 80+ chars)", rows: 3 },
             { key: "action" as const, label: "Action", hint: "What exactly did YOU do? This is the heart of your story — be specific and use 'I', not 'we'. (suggest 200+ chars)", rows: 5 },
             { key: "result" as const, label: "Result", hint: "What happened? Quantify whenever possible. (suggest 100+ chars)", rows: 3 },
             { key: "impact" as const, label: "Business Impact", hint: "Quantify the impact — revenue, cost, efficiency, customers, etc. Include at least one number.", rows: 2 },
-          ].map(({ key, label, hint, rows }) => (
+          ] as { key: RequiredStarField; label: string; hint: string; rows: number }[]).map(({ key, label, hint, rows }) => (
             <div key={key}>
               <label className="block text-xs font-semibold mb-1" style={{ color: "#6b7fa3" }}>
-                {label} {key === "action" && <span style={{ color: "#818cf8" }}>— The Heavy Lifting</span>}
+                {label} <span style={{ color: "#f87171" }}>*</span>
+                {key === "action" && <span style={{ color: "#818cf8" }}> — The Heavy Lifting</span>}
               </label>
               <p className="text-xs mb-1" style={{ color: "#4a5980" }}>{hint}</p>
               <textarea
                 value={form[key] as string}
                 onChange={(e) => updateField(key, e.target.value)}
+                onBlur={() => markTouched(key)}
                 rows={rows}
                 className={textareaClass}
-                style={textareaStyle}
+                style={{ background: "#111827", border: inputBorder(key), color: "#e8eaf0" }}
               />
-              <div className="text-right text-xs mt-0.5" style={{ color: "#4a5980" }}>
-                {(form[key] as string).length} chars
+              <div className="flex justify-between items-center mt-0.5">
+                {showError(key) ? (
+                  <p className="flex items-center gap-1 text-xs" style={{ color: "#f87171" }}>
+                    <AlertCircle size={11} /> {errors[key]}
+                  </p>
+                ) : (
+                  <span />
+                )}
+                <span className="text-xs" style={{ color: "#4a5980" }}>
+                  {(form[key] as string).length} chars
+                </span>
               </div>
             </div>
           ))}
@@ -344,12 +408,30 @@ function StoryForm({
         </div>
       </div>
 
+      {/* Error summary shown only after submit attempt */}
+      {submitAttempted && hasErrors && (
+        <div className="rounded-xl p-3 flex items-start gap-2" style={{ background: "#f8717115", border: "1px solid #f8717140" }}>
+          <AlertCircle size={14} style={{ color: "#f87171", marginTop: 1, flexShrink: 0 }} />
+          <div>
+            <p className="text-xs font-semibold mb-1" style={{ color: "#f87171" }}>Please fill in all required fields:</p>
+            <ul className="text-xs space-y-0.5" style={{ color: "#fca5a5" }}>
+              {(Object.entries(errors) as [RequiredStarField, string][]).map(([, msg]) => (
+                <li key={msg}>• {msg}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
+
       <div className="flex gap-3">
-        <button onClick={handleSubmit} disabled={!form.title.trim()}
+        <button
+          onClick={handleSubmit}
           className="flex-1 py-3 rounded-xl font-semibold text-sm transition-all"
           style={{
-            background: form.title.trim() ? "linear-gradient(135deg, #6366f1, #8b5cf6)" : "#1e2d4a",
-            color: form.title.trim() ? "#fff" : "#4a5980",
+            background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
+            color: "#fff",
+            opacity: hasErrors && submitAttempted ? 0.6 : 1,
+            cursor: "pointer",
           }}>
           {initial ? "Update Story" : "Save Story"}
         </button>
