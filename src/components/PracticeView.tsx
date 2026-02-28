@@ -429,8 +429,21 @@ function PracticeSession({
             {inputMode === "voice" ? (
               <div>
                 {voice.permissionDenied ? (
-                  <div className="rounded-xl p-4 text-xs" style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", color: "#f87171" }}>
-                    Microphone permission denied. Please allow microphone access in your browser settings and try again.
+                  <div className="rounded-xl p-4" style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)" }}>
+                    <p className="text-xs mb-3" style={{ color: "#f87171" }}>
+                      Microphone access was blocked. Please allow microphone access in your browser, then click Try Again.
+                    </p>
+                    <button
+                      onClick={async () => {
+                        voice.resetPermission();
+                        await voice.startRecording();
+                      }}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all hover:scale-105"
+                      style={{ background: "rgba(239,68,68,0.2)", color: "#f87171", border: "1px solid rgba(239,68,68,0.4)" }}
+                    >
+                      <Mic size={11} />
+                      Try Again
+                    </button>
                   </div>
                 ) : (
                   <div>

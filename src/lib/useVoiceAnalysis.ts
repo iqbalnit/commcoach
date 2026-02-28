@@ -236,6 +236,10 @@ export function useVoiceAnalysis() {
     setVolumeLevel(0);
   }, []);
 
+  const resetPermission = useCallback(() => {
+    setPermissionDenied(false);
+  }, []);
+
   useEffect(() => {
     return () => {
       if (isRecording) stopRecording();
@@ -255,6 +259,7 @@ export function useVoiceAnalysis() {
     startRecording,
     stopRecording,
     resetMetrics,
+    resetPermission,
   };
 }
 
