@@ -194,7 +194,7 @@ export function useVoiceAnalysis() {
 
       trackVolume();
     } catch (err) {
-      if (err instanceof Error && err.name === "NotAllowedError") {
+      if (err instanceof Error && (err.name === "NotAllowedError" || err.name === "PermissionDeniedError")) {
         setPermissionDenied(true);
       }
     }
