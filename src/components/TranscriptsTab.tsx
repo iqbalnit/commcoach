@@ -222,7 +222,6 @@ function TranscriptCard({
 export default function TranscriptsTab({ isAuthenticated }: TranscriptsTabProps) {
   const [transcripts, setTranscripts] = useState<TranscriptData[]>([]);
   const [loading, setLoading] = useState(false);
-  const [loaded, setLoaded] = useState(false);
 
   const fetchTranscripts = useCallback(async () => {
     if (!isAuthenticated) return;
@@ -234,15 +233,14 @@ export default function TranscriptsTab({ isAuthenticated }: TranscriptsTabProps)
       }
     } finally {
       setLoading(false);
-      setLoaded(true);
     }
   }, [isAuthenticated]);
 
   useEffect(() => {
-    if (!loaded && isAuthenticated) {
+    if (isAuthenticated) {
       fetchTranscripts();
     }
-  }, [loaded, isAuthenticated, fetchTranscripts]);
+  }, [isAuthenticated, fetchTranscripts]);
 
   const handleDelete = async (id: string) => {
     const res = await fetch(`/api/transcripts/${id}`, { method: "DELETE" });
@@ -282,7 +280,7 @@ export default function TranscriptsTab({ isAuthenticated }: TranscriptsTabProps)
     );
   }
 
-  if (loaded && transcripts.length === 0) {
+  if (!loading && transcripts.length === 0) {
     return (
       <div className="text-center py-12">
         <FileText size={36} style={{ color: "#1e2d4a", margin: "0 auto 12px" }} />

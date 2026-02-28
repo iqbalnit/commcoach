@@ -200,8 +200,8 @@ function PracticeSession({
     if (!completedRef.current) {
       completedRef.current = true;
       onComplete(elapsed, finalText);
-      // Fire-and-forget transcript save
-      if (isAuthenticated) {
+      // Fire-and-forget transcript save (only meaningful sessions: ≥10 chars and ≥5 seconds)
+      if (isAuthenticated && finalText.trim().length >= 10 && elapsed >= 5) {
         fetch("/api/transcripts", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
