@@ -111,6 +111,9 @@ export function useVoiceAnalysis() {
   const startRecording = useCallback(async () => {
     if (!isSupported) return;
 
+    // Always clear any previous permission error before attempting
+    setPermissionDenied(false);
+
     const SpeechRecognitionClass = getSpeechRecognition()!;
 
     try {
@@ -165,7 +168,8 @@ export function useVoiceAnalysis() {
       };
 
       recognition.onerror = (e: SpeechRecognitionErrorEvent) => {
-        if (e.error === "not-allowed") {
+        // Only treat genuine permission errors as denied — ignore "aborted", "no-speech", etc.
+        if (e.error === "not-allowed" || e.error === "permission-denied") {
           setPermissionDenied(true);
         }
       };

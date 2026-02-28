@@ -219,6 +219,7 @@ function PracticeSession({
 
   const handleVoiceToggle = async (mode: "type" | "voice") => {
     if (mode === "voice" && !voice.isRecording) {
+      voice.resetPermission();
       await voice.startRecording();
     } else if (mode === "type" && voice.isRecording) {
       const metrics = voice.stopRecording();
