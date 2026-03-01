@@ -51,136 +51,161 @@ Rules:
 - prepPlan.topGaps should identify 3 specific weaknesses or gaps based on the resume`;
 
 export async function POST(req: Request) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const contentType = req.headers.get("content-type") ?? "";
-  let sourceText = "";
-  let sourceCharCount = 0;
-  let targetCompany = "";
-  let roleLevel = "";
-
-  if (contentType.includes("multipart/form-data")) {
-    let formData: FormData;
-    try {
-      formData = await req.formData();
-    } catch {
-      return NextResponse.json({ error: "Invalid form data" }, { status: 400 });
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const file = formData.get("file");
-    if (!file || !(file instanceof Blob)) {
-      return NextResponse.json({ error: "No file provided" }, { status: 400 });
-    }
-    if (file.size > MAX_FILE_SIZE) {
-      return NextResponse.json({ error: "File too large (max 5MB)" }, { status: 400 });
-    }
+    const contentType = req.headers.get("content-type") ?? "";
+    let sourceText = "";
+    let sourceCharCount = 0;
+    let targetCompany = "";
+    let roleLevel = "";
 
-    const fileName = (file as File).name?.toLowerCase() ?? "";
-    const buffer = Buffer.from(await file.arrayBuffer());
+    if (contentType.includes("multipart/form-data")) {
+      let formData: FormData;
+      try {
+        formData = await req.formData();
+      } catch {
+        return NextResponse.json({ error: "Invalid form data" }, { status: 400 });
+      }
 
-    if (fileName.endsWith(".pdf")) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const pdfParseMod = await import("pdf-parse") as any;
-      const pdfParse = pdfParseMod.default ?? pdfParseMod;
-      const data = await pdfParse(buffer);
-      sourceText = data.text;
-    } else if (fileName.endsWith(".docx") || fileName.endsWith(".doc")) {
-      const mammoth = await import("mammoth");
-      const result = await mammoth.extractRawText({ buffer });
-      sourceText = result.value;
-    } else if (fileName.endsWith(".txt")) {
-      sourceText = buffer.toString("utf-8");
+      const file = formData.get("file");
+      if (!file || !(file instanceof Blob)) {
+        return NextResponse.json({ error: "No file provided" }, { status: 400 });
+      }
+      if (file.size > MAX_FILE_SIZE) {
+        return NextResponse.json({ error: "File too large (max 5MB)" }, { status: 400 });
+      }
+
+      const fileName = (file as File).name?.toLowerCase() ?? "";
+      const buffer = Buffer.from(await file.arrayBuffer());
+
+      if (fileName.endsWith(".pdf")) {
+        try {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const pdfParseMod = await import("pdf-parse") as any;
+          const pdfParse = pdfParseMod.default ?? pdfParseMod;
+          const data = await pdfParse(buffer);
+          sourceText = data.text;
+        } catch (pdfErr) {
+          console.error("PDF parse error:", pdfErr);
+          return NextResponse.json({ error: "Could not parse PDF. Try converting to TXT." }, { status: 422 });
+        }
+      } else if (fileName.endsWith(".docx") || fileName.endsWith(".doc")) {
+        try {
+          const mammoth = await import("mammoth");
+          const result = await mammoth.extractRawText({ buffer });
+          sourceText = result.value;
+        } catch (docErr) {
+          console.error("DOCX parse error:", docErr);
+          return NextResponse.json({ error: "Could not parse DOCX. Try converting to TXT." }, { status: 422 });
+        }
+      } else if (fileName.endsWith(".txt")) {
+        sourceText = buffer.toString("utf-8");
+      } else {
+        return NextResponse.json(
+          { error: "Unsupported file type. Please upload PDF, DOCX, or TXT." },
+          { status: 400 }
+        );
+      }
+
+      const tc = formData.get("targetCompany");
+      const rl = formData.get("roleLevel");
+      if (typeof tc === "string") targetCompany = tc;
+      if (typeof rl === "string") roleLevel = rl;
+
+    } else if (contentType.includes("application/json")) {
+      let body: unknown;
+      try {
+        body = await req.json();
+      } catch {
+        return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+      }
+
+      const obj = body as Record<string, unknown>;
+      if (typeof obj.text !== "string" || obj.text.trim().length === 0) {
+        return NextResponse.json({ error: "text field is required" }, { status: 400 });
+      }
+      sourceText = obj.text;
+      if (sourceText.length > MAX_TEXT_CHARS) {
+        return NextResponse.json({ error: `Text too long (max ${MAX_TEXT_CHARS} characters)` }, { status: 400 });
+      }
+      if (typeof obj.targetCompany === "string") targetCompany = obj.targetCompany;
+      if (typeof obj.roleLevel === "string") roleLevel = obj.roleLevel;
     } else {
       return NextResponse.json(
-        { error: "Unsupported file type. Please upload PDF, DOCX, or TXT." },
-        { status: 400 }
+        { error: "Content-Type must be multipart/form-data or application/json" },
+        { status: 415 }
       );
     }
 
-    const tc = formData.get("targetCompany");
-    const rl = formData.get("roleLevel");
-    if (typeof tc === "string") targetCompany = tc;
-    if (typeof rl === "string") roleLevel = rl;
+    sourceCharCount = sourceText.length;
+    if (sourceCharCount === 0) {
+      return NextResponse.json({ error: "No text could be extracted from the file" }, { status: 400 });
+    }
 
-  } else if (contentType.includes("application/json")) {
-    let body: unknown;
+    const truncatedText =
+      sourceText.length > MAX_CLAUDE_CHARS
+        ? sourceText.slice(0, MAX_CLAUDE_CHARS) + "\n[... truncated for analysis]"
+        : sourceText;
+
+    const contextNote =
+      targetCompany || roleLevel
+        ? `\n\nContext: Target company: ${targetCompany || "not specified"}. Target role level: ${roleLevel || "not specified"}.`
+        : "";
+
+    const message = await anthropic.messages.create({
+      model: "claude-3-5-haiku-20241022",
+      max_tokens: 6000,
+      system: SYSTEM_PROMPT,
+      messages: [
+        {
+          role: "user",
+          content: `Analyze this resume and generate the interview prep package:${contextNote}\n\n${truncatedText}`,
+        },
+      ],
+    });
+
+    const responseText =
+      message.content[0].type === "text" ? message.content[0].text.trim() : "";
+
+    // Strip markdown code fences if Claude wraps in ```json ... ```
+    const cleanedResponse = responseText
+      .replace(/^```json\s*/i, "")
+      .replace(/^```\s*/i, "")
+      .replace(/\s*```$/i, "")
+      .trim();
+
+    let parsed: unknown;
     try {
-      body = await req.json();
+      parsed = JSON.parse(cleanedResponse);
+      if (typeof parsed !== "object" || parsed === null) throw new Error("Not an object");
     } catch {
-      return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+      console.error("Resume prep JSON parse error. Raw:", responseText.slice(0, 500));
+      return NextResponse.json(
+        { error: "Could not parse AI response. Please try again.", raw: responseText.slice(0, 500) },
+        { status: 422 }
+      );
     }
 
-    const obj = body as Record<string, unknown>;
-    if (typeof obj.text !== "string" || obj.text.trim().length === 0) {
-      return NextResponse.json({ error: "text field is required" }, { status: 400 });
-    }
-    sourceText = obj.text;
-    if (sourceText.length > MAX_TEXT_CHARS) {
-      return NextResponse.json({ error: `Text too long (max ${MAX_TEXT_CHARS} characters)` }, { status: 400 });
-    }
-    if (typeof obj.targetCompany === "string") targetCompany = obj.targetCompany;
-    if (typeof obj.roleLevel === "string") roleLevel = obj.roleLevel;
-  } else {
-    return NextResponse.json(
-      { error: "Content-Type must be multipart/form-data or application/json" },
-      { status: 415 }
-    );
+    const result = parsed as {
+      stories?: unknown[];
+      predictedQuestions?: unknown[];
+      prepPlan?: unknown;
+    };
+
+    return NextResponse.json({
+      stories: Array.isArray(result.stories) ? result.stories : [],
+      predictedQuestions: Array.isArray(result.predictedQuestions) ? result.predictedQuestions : [],
+      prepPlan: result.prepPlan ?? { summary: "", weeklyFocus: [], priorityFrameworks: [], topGaps: [] },
+      sourceCharCount,
+    });
+
+  } catch (err) {
+    console.error("POST /api/ai/resume-prep unhandled error:", err);
+    const message = err instanceof Error ? err.message : "Unknown error";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
-
-  sourceCharCount = sourceText.length;
-  if (sourceCharCount === 0) {
-    return NextResponse.json({ error: "No text could be extracted from the file" }, { status: 400 });
-  }
-
-  const truncatedText =
-    sourceText.length > MAX_CLAUDE_CHARS
-      ? sourceText.slice(0, MAX_CLAUDE_CHARS) + "\n[... truncated for analysis]"
-      : sourceText;
-
-  const contextNote =
-    targetCompany || roleLevel
-      ? `\n\nContext: Target company: ${targetCompany || "not specified"}. Target role level: ${roleLevel || "not specified"}.`
-      : "";
-
-  const message = await anthropic.messages.create({
-    model: "claude-3-5-haiku-20241022",
-    max_tokens: 6000,
-    system: SYSTEM_PROMPT,
-    messages: [
-      {
-        role: "user",
-        content: `Analyze this resume and generate the interview prep package:${contextNote}\n\n${truncatedText}`,
-      },
-    ],
-  });
-
-  const responseText =
-    message.content[0].type === "text" ? message.content[0].text.trim() : "";
-
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(responseText);
-    if (typeof parsed !== "object" || parsed === null) throw new Error("Not an object");
-  } catch {
-    return NextResponse.json(
-      { error: "Could not parse AI response", raw: responseText },
-      { status: 422 }
-    );
-  }
-
-  const result = parsed as {
-    stories?: unknown[];
-    predictedQuestions?: unknown[];
-    prepPlan?: unknown;
-  };
-
-  return NextResponse.json({
-    stories: Array.isArray(result.stories) ? result.stories : [],
-    predictedQuestions: Array.isArray(result.predictedQuestions) ? result.predictedQuestions : [],
-    prepPlan: result.prepPlan ?? { summary: "", weeklyFocus: [], priorityFrameworks: [], topGaps: [] },
-    sourceCharCount,
-  });
 }
