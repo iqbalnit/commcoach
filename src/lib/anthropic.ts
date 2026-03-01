@@ -1,12 +1,16 @@
 import Anthropic from "@anthropic-ai/sdk";
 import "server-only";
 
-const globalForAnthropic = globalThis as unknown as { anthropic: Anthropic | undefined };
-
-export const anthropic =
-  globalForAnthropic.anthropic ??
-  new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! });
-
-if (process.env.NODE_ENV !== "production") {
-  globalForAnthropic.anthropic = anthropic;
+function createAnthropicClient() {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) {
+    throw new Error(
+      "ANTHROPIC_API_KEY is not set. Add it to your .env.local file."
+    );
+  }
+  return new Anthropic({ apiKey });
 }
+
+// Always create fresh — do NOT cache in globalThis, since the key
+// may not have been in process.env when the singleton was first created.
+export const anthropic = createAnthropicClient();
