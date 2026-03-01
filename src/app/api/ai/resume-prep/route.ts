@@ -84,11 +84,12 @@ export async function POST(req: Request) {
 
       if (fileName.endsWith(".pdf")) {
         try {
+          // pdf-parse v2 (mehmet-kozan fork) uses class-based API
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const pdfParseMod = await import("pdf-parse") as any;
-          const pdfParse = pdfParseMod.default ?? pdfParseMod;
-          const data = await pdfParse(buffer);
-          sourceText = data.text;
+          const { PDFParse } = await import("pdf-parse") as any;
+          const parser = new PDFParse({ data: buffer });
+          const result = await parser.getText();
+          sourceText = result.text;
         } catch (pdfErr) {
           console.error("PDF parse error:", pdfErr);
           return NextResponse.json({ error: "Could not parse PDF. Try converting to TXT." }, { status: 422 });
