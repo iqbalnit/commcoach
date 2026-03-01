@@ -16,6 +16,7 @@ const securityHeaders = [
       "img-src 'self' data: https://lh3.googleusercontent.com",
       "font-src 'self'",
       "connect-src 'self'",
+      "manifest-src 'self'",
       "frame-ancestors 'none'",
     ].join("; "),
   },

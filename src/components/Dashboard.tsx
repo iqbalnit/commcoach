@@ -189,7 +189,7 @@ export default function Dashboard({ setActiveView }: DashboardProps) {
   ];
 
   return (
-    <div className="p-8 max-w-6xl mx-auto">
+    <div className="p-4 md:p-8 max-w-6xl mx-auto">
       {/* ── Header ──────────────────────────────────────────────────────────── */}
       <div className="mb-8">
         <div className="flex items-center gap-2 mb-2">
@@ -200,7 +200,7 @@ export default function Dashboard({ setActiveView }: DashboardProps) {
         </div>
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-white mb-2">Sharpen Your Executive Voice.</h1>
+            <h1 className="text-2xl md:text-3xl font-bold text-white mb-2">Sharpen Your Executive Voice.</h1>
             <p className="text-base" style={{ color: "#6b7fa3" }}>
               Frameworks, practice scenarios, and executive presence —
               engineered for FAANG Director and VP interviews.
@@ -232,7 +232,7 @@ export default function Dashboard({ setActiveView }: DashboardProps) {
               Executive Track Status
             </span>
           </div>
-          <div className="grid grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
             {/* FAANG Readiness Gauge */}
             <div className="flex items-center gap-4">
               <GaugeRing pct={faangReadinessScore} color="#818cf8" size={64} />
@@ -312,7 +312,7 @@ export default function Dashboard({ setActiveView }: DashboardProps) {
       {/* ── Job Interview Countdown Banner ──────────────────────────────────── */}
       {isAuthenticated && nextInterview && daysUntilNext !== null && daysUntilNext <= 14 && (
         <div
-          className="rounded-2xl p-5 mb-6 flex items-center gap-5"
+          className="rounded-2xl p-5 mb-6 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-5"
           style={{ background: "rgba(251,191,36,0.08)", border: "1px solid rgba(251,191,36,0.2)" }}
         >
           <div
@@ -332,7 +332,7 @@ export default function Dashboard({ setActiveView }: DashboardProps) {
               {nextInterview.role} · {new Date(nextInterview.interviewDate!).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
             </div>
           </div>
-          <div className="flex items-center gap-2 flex-shrink-0">
+          <div className="flex items-center gap-2 flex-wrap">
             <button
               onClick={() => setActiveView("prep-packs")}
               className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all hover:scale-105"
@@ -353,7 +353,7 @@ export default function Dashboard({ setActiveView }: DashboardProps) {
 
       {/* ── Stats row (always visible) ──────────────────────────────────────── */}
       <div
-        className="grid grid-cols-4 gap-4 mb-8 p-4 rounded-2xl"
+        className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-8 p-4 rounded-2xl"
         style={{ background: "#0d1426", border: "1px solid #1e2d4a" }}
       >
         {[
@@ -398,7 +398,7 @@ export default function Dashboard({ setActiveView }: DashboardProps) {
       </div>
 
       {/* ── Quick access cards (6-card 2×3 grid) ───────────────────────────── */}
-      <div className="grid grid-cols-3 gap-4 mb-8">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 mb-8">
         {quickCards.map((card) => (
           <button
             key={card.view}
@@ -430,7 +430,7 @@ export default function Dashboard({ setActiveView }: DashboardProps) {
       </div>
 
       {/* ── Two-column: featured frameworks + coach insights ─────────────────── */}
-      <div className="grid grid-cols-2 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-8">
         {/* Featured Frameworks */}
         <div
           className="rounded-2xl p-5"
@@ -525,7 +525,7 @@ export default function Dashboard({ setActiveView }: DashboardProps) {
 
       {/* ── Smart CTA ───────────────────────────────────────────────────────── */}
       <div
-        className="rounded-2xl p-6 flex items-center justify-between"
+        className="rounded-2xl p-5 md:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
         style={{
           background: "linear-gradient(135deg, rgba(99,102,241,0.15) 0%, rgba(139,92,246,0.08) 100%)",
           border: "1px solid rgba(99,102,241,0.25)",

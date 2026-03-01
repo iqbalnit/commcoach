@@ -26,6 +26,8 @@ import { useSession, signIn, signOut } from "next-auth/react";
 interface SidebarProps {
   activeView: View;
   setActiveView: (v: View) => void;
+  isOpen: boolean;
+  onClose: () => void;
 }
 
 const DAILY_TIPS = [
@@ -67,7 +69,7 @@ const execNavItems: { label: string; view: View; icon: React.ReactNode; badge?: 
   { label: "Resume Prep", view: "resume-prep", icon: <FileText size={18} />, badge: "AI" },
 ];
 
-export default function Sidebar({ activeView, setActiveView }: SidebarProps) {
+export default function Sidebar({ activeView, setActiveView, isOpen, onClose }: SidebarProps) {
   const { data: session } = useSession();
   const dailyTip = DAILY_TIPS[new Date().getDate() % DAILY_TIPS.length];
 
@@ -108,7 +110,15 @@ export default function Sidebar({ activeView, setActiveView }: SidebarProps) {
 
   return (
     <aside
-      className="flex flex-col"
+      className={[
+        "flex flex-col",
+        // Mobile: fixed overlay drawer, slides in from left
+        // Desktop (md+): static in the flex row, always visible
+        "fixed md:relative inset-y-0 left-0 z-30",
+        "transition-transform duration-200 ease-in-out",
+        isOpen ? "translate-x-0" : "-translate-x-full",
+        "md:translate-x-0",
+      ].join(" ")}
       style={{
         width: 220,
         minWidth: 220,
