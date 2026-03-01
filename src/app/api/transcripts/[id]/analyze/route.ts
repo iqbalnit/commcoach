@@ -24,7 +24,7 @@ export async function POST(
   }
 
   const message = await anthropic.messages.create({
-    model: "claude-3-5-haiku-20241022",
+    model: "claude-haiku-4-5",
     max_tokens: 1024,
     system: `You are an executive communication coach. Analyze a practice response and return ONLY valid JSON with no markdown or extra text. The JSON must have this exact shape:
 {

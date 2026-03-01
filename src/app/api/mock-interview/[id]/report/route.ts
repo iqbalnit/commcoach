@@ -98,7 +98,7 @@ Return ONLY valid JSON with this exact shape (no markdown, no code blocks):
 For questionBreakdown, include all ${questionAnswers.length} questions. Use the existing scores and feedback but enhance the feedbackText and add idealAnswerOpening for each.`;
 
   const message = await anthropic.messages.create({
-    model: "claude-3-5-haiku-20241022",
+    model: "claude-haiku-4-5",
     max_tokens: 4000,
     system: "You are an executive communication expert. Return only valid JSON, no other text.",
     messages: [{ role: "user", content: prompt }],

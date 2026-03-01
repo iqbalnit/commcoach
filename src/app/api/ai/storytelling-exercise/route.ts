@@ -49,7 +49,7 @@ export async function POST(req: Request) {
       : "";
 
     const message = await anthropic.messages.create({
-      model: "claude-3-5-haiku-20241022",
+      model: "claude-haiku-4-5",
       max_tokens: 512,
       system:
         "You are an executive communication coach specializing in storytelling. Generate a single, specific practice prompt for the given storytelling module. The prompt should be challenging but achievable, relevant to FAANG Director/VP roles. Return only the prompt text, no extra commentary.",
@@ -72,7 +72,7 @@ export async function POST(req: Request) {
   }
 
   const message = await anthropic.messages.create({
-    model: "claude-3-5-haiku-20241022",
+    model: "claude-haiku-4-5",
     max_tokens: 1024,
     system:
       "You are an executive communication coach. Evaluate the storytelling response and provide concise, actionable feedback. Return ONLY valid JSON: { \"feedback\": \"2-3 sentence coaching feedback\", \"exampleAnswer\": \"one sentence showing an improved version of the opening\" }",
