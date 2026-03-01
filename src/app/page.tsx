@@ -13,6 +13,10 @@ import ExecutiveInterviewView from "@/components/ExecutiveInterviewView";
 import StoryBankView from "@/components/StoryBankView";
 import StorytellingMasteryView from "@/components/StorytellingMasteryView";
 import MockInterviewView from "@/components/MockInterviewView";
+import PrepPacksView from "@/components/PrepPacksView";
+import JobTrackerView from "@/components/JobTrackerView";
+import ResumePrepView from "@/components/ResumePrepView";
+import AchievementBadgesView from "@/components/AchievementBadgesView";
 
 export type View =
   | "dashboard"
@@ -25,7 +29,11 @@ export type View =
   | "exec-interview"
   | "story-bank"
   | "storytelling"
-  | "mock-interview";
+  | "mock-interview"
+  | "prep-packs"
+  | "job-tracker"
+  | "resume-prep"
+  | "achievements";
 
 export default function Home() {
   const [activeView, setActiveView] = useState<View>("dashboard");
@@ -65,6 +73,19 @@ export default function Home() {
         {activeView === "story-bank" && <StoryBankView />}
         {activeView === "storytelling" && <StorytellingMasteryView />}
         {activeView === "mock-interview" && <MockInterviewView />}
+        {activeView === "prep-packs" && (
+          <PrepPacksView setActiveView={handleSetActiveView} />
+        )}
+        {activeView === "job-tracker" && (
+          <JobTrackerView setActiveView={handleSetActiveView} />
+        )}
+        {activeView === "resume-prep" && (
+          <ResumePrepView
+            setActiveView={handleSetActiveView}
+            setPreselectedScenarioId={setPreselectedScenarioId}
+          />
+        )}
+        {activeView === "achievements" && <AchievementBadgesView />}
       </main>
     </div>
   );

@@ -14,6 +14,7 @@ import {
   RotateCcw,
   Clock,
   Building2,
+  FileText,
 } from "lucide-react";
 
 type Phase = "setup" | "active" | "complete";
@@ -546,6 +547,14 @@ function CompletePhase({
         >
           <RotateCcw size={14} />
           Start New Interview
+        </button>
+        <button
+          onClick={() => window.open(`/interview-report/${interview.id}`, "_blank")}
+          className="flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-semibold transition-all hover:scale-105"
+          style={{ background: "rgba(99,102,241,0.15)", color: "#a5b4fc", border: "1px solid rgba(99,102,241,0.3)" }}
+        >
+          <FileText size={14} />
+          Download Report
         </button>
       </div>
     </div>

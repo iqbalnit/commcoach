@@ -24,104 +24,11 @@ import {
 } from "lucide-react";
 import { frameworks, scenarios, principles, quizzes, companyProfiles } from "@/lib/data";
 import { useProgress, computeFaangReadiness } from "@/lib/useProgress";
+import { computeBadges } from "@/lib/badges";
 import type { View } from "@/app/page";
 
 interface ProgressViewProps {
   setActiveView?: (v: View) => void;
-}
-
-// ── Badge definitions ─────────────────────────────────────────────────────────
-function buildBadges(
-  scenariosDone: number,
-  frameworksDone: number,
-  quizBest: number,
-  streak: number,
-  storyCount: number,
-  weeksCompleted: number
-) {
-  const totalQuiz = quizzes.length;
-  return [
-    {
-      id: "first-pitch",
-      title: "First Pitch",
-      description: "Completed your first practice scenario",
-      icon: "🎤",
-      earned: scenariosDone >= 1,
-      color: "#818cf8",
-    },
-    {
-      id: "framework-explorer",
-      title: "Framework Explorer",
-      description: `Opened all ${frameworks.length} communication frameworks`,
-      icon: "📚",
-      earned: frameworksDone >= frameworks.length,
-      color: "#a78bfa",
-    },
-    {
-      id: "quiz-contender",
-      title: "Quiz Contender",
-      description: "Scored 75%+ on the knowledge check",
-      icon: "🧠",
-      earned: quizBest / totalQuiz >= 0.75,
-      color: "#38bdf8",
-    },
-    {
-      id: "storyteller",
-      title: "Storyteller",
-      description: "Added your first STAR story to the bank",
-      icon: "✨",
-      earned: storyCount >= 1,
-      color: "#fbbf24",
-    },
-    {
-      id: "streak-week",
-      title: "7-Day Streak",
-      description: "Practiced 7 days in a row",
-      icon: "🔥",
-      earned: streak >= 7,
-      color: "#f59e0b",
-    },
-    {
-      id: "executive-track",
-      title: "Executive Track",
-      description: "Completed Week 1 of the learning path",
-      icon: "🗓️",
-      earned: weeksCompleted >= 1,
-      color: "#34d399",
-    },
-    {
-      id: "story-bank-5",
-      title: "Interview Ready",
-      description: "Built a Story Bank of 5+ STAR stories",
-      icon: "💼",
-      earned: storyCount >= 5,
-      color: "#ec4899",
-    },
-    {
-      id: "perfect-quiz",
-      title: "Perfect Score",
-      description: "Scored 100% on the knowledge check",
-      icon: "🏆",
-      earned: quizBest >= totalQuiz,
-      color: "#f97316",
-    },
-    {
-      id: "halfway-path",
-      title: "Halfway There",
-      description: "Completed 6 weeks of the learning path",
-      icon: "🗺️",
-      earned: weeksCompleted >= 6,
-      color: "#10b981",
-    },
-    {
-      id: "scenario-10",
-      title: "Scenario Veteran",
-      description: "Completed 10 or more practice scenarios",
-      icon: "🎯",
-      earned: scenariosDone >= 10,
-      color: "#6366f1",
-    },
-  ];
 }
 
 // ── Skill area computation ────────────────────────────────────────────────────
@@ -241,7 +148,7 @@ function SkillBar({ label, pct, color }: { label: string; pct: number; color: st
   );
 }
 
-function BadgeCard({ badge }: { badge: ReturnType<typeof buildBadges>[0] }) {
+function BadgeCard({ badge }: { badge: { id: string; title: string; description: string; icon: string; color: string; earned: boolean } }) {
   return (
     <div
       className="rounded-xl p-4 flex flex-col items-center text-center transition-all duration-200"
@@ -553,7 +460,7 @@ export default function ProgressView({ setActiveView }: ProgressViewProps) {
   const weeksCompleted = learningPath?.completedWeeks.length ?? 0;
   const currentWeek = learningPath?.currentWeek ?? 1;
 
-  const BADGES = buildBadges(scenariosDone, frameworksDone, quizBest, streak, storyCount, weeksCompleted);
+  const BADGES = computeBadges({ progress, stories, mockCompletedCount: 0, weeksCompleted });
   const earnedBadges = BADGES.filter((b) => b.earned).length;
 
   const skillAreas = computeSkillAreas(

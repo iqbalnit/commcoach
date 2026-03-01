@@ -16,6 +16,10 @@ import {
   LogOut,
   MessageSquare,
   Sparkles,
+  Briefcase,
+  Calendar,
+  FileText,
+  Trophy,
 } from "lucide-react";
 import { useSession, signIn, signOut } from "next-auth/react";
 
@@ -49,6 +53,7 @@ const coreNavItems: { label: string; view: View; icon: React.ReactNode; badge?: 
   { label: "Principles", view: "principles", icon: <Lightbulb size={18} /> },
   { label: "Quiz", view: "quiz", icon: <Brain size={18} /> },
   { label: "Progress", view: "progress", icon: <TrendingUp size={18} /> },
+  { label: "Achievements", view: "achievements", icon: <Trophy size={18} /> },
 ];
 
 const execNavItems: { label: string; view: View; icon: React.ReactNode; badge?: string }[] = [
@@ -57,6 +62,9 @@ const execNavItems: { label: string; view: View; icon: React.ReactNode; badge?: 
   { label: "Story Bank", view: "story-bank", icon: <BookMarked size={18} /> },
   { label: "Mock Interview", view: "mock-interview", icon: <MessageSquare size={18} />, badge: "AI" },
   { label: "Storytelling", view: "storytelling", icon: <Sparkles size={18} />, badge: "New" },
+  { label: "Prep Packs", view: "prep-packs", icon: <Briefcase size={18} />, badge: "5" },
+  { label: "Job Tracker", view: "job-tracker", icon: <Calendar size={18} /> },
+  { label: "Resume Prep", view: "resume-prep", icon: <FileText size={18} />, badge: "AI" },
 ];
 
 export default function Sidebar({ activeView, setActiveView }: SidebarProps) {

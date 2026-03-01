@@ -7,10 +7,19 @@ import { ValidationError, validateBody } from "@/lib/validate";
 const VALID_COMPANIES = ["Google", "Amazon", "Microsoft", "Meta", "Apple"];
 const VALID_ROLES = ["director", "vp"];
 
-export async function GET() {
+export async function GET(req: Request) {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const url = new URL(req.url);
+  if (url.searchParams.get("summary") === "true") {
+    const [total, completed] = await Promise.all([
+      prisma.mockInterview.count({ where: { userId: session.user.id } }),
+      prisma.mockInterview.count({ where: { userId: session.user.id, status: "completed" } }),
+    ]);
+    return NextResponse.json({ total, completed });
   }
 
   const interviews = await prisma.mockInterview.findMany({

@@ -3,6 +3,7 @@
 import { View } from "@/app/page";
 import { frameworks, scenarios, principles, learningPath as lpData } from "@/lib/data";
 import { useProgress } from "@/lib/useProgress";
+import { useJobApplications } from "@/lib/useJobApplications";
 import {
   BookOpen,
   Mic,
@@ -20,6 +21,7 @@ import {
   LogIn,
   TrendingUp,
   CheckCircle2,
+  Clock,
 } from "lucide-react";
 
 interface DashboardProps {
@@ -100,6 +102,7 @@ function GaugeRing({
 export default function Dashboard({ setActiveView }: DashboardProps) {
   const { progress, stories, learningPath, loading, isAuthenticated, faangReadinessScore } =
     useProgress();
+  const { nextInterview, daysUntilNext } = useJobApplications();
 
   // ── Derived counts ──────────────────────────────────────────────────────────
   const totalFrameworks = frameworks.length;
@@ -302,6 +305,48 @@ export default function Dashboard({ setActiveView }: DashboardProps) {
                 }}
               />
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Job Interview Countdown Banner ──────────────────────────────────── */}
+      {isAuthenticated && nextInterview && daysUntilNext !== null && daysUntilNext <= 14 && (
+        <div
+          className="rounded-2xl p-5 mb-6 flex items-center gap-5"
+          style={{ background: "rgba(251,191,36,0.08)", border: "1px solid rgba(251,191,36,0.2)" }}
+        >
+          <div
+            className="flex items-center justify-center rounded-xl flex-shrink-0"
+            style={{ width: 48, height: 48, background: "rgba(251,191,36,0.15)", border: "1px solid rgba(251,191,36,0.25)" }}
+          >
+            <Clock size={22} style={{ color: "#fbbf24" }} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="text-sm font-semibold text-white">
+              {nextInterview.company} Interview in{" "}
+              <span style={{ color: "#fbbf24" }}>
+                {daysUntilNext === 0 ? "Today!" : `${daysUntilNext} day${daysUntilNext !== 1 ? "s" : ""}`}
+              </span>
+            </div>
+            <div className="text-xs" style={{ color: "#6b7fa3" }}>
+              {nextInterview.role} · {new Date(nextInterview.interviewDate!).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+            </div>
+          </div>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <button
+              onClick={() => setActiveView("prep-packs")}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all hover:scale-105"
+              style={{ background: "rgba(251,191,36,0.15)", color: "#fbbf24", border: "1px solid rgba(251,191,36,0.25)" }}
+            >
+              View Prep Pack →
+            </button>
+            <button
+              onClick={() => setActiveView("mock-interview")}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all hover:scale-105"
+              style={{ background: "rgba(99,102,241,0.15)", color: "#a5b4fc", border: "1px solid rgba(99,102,241,0.25)" }}
+            >
+              Start Mock Interview →
+            </button>
           </div>
         </div>
       )}
